@@ -1,0 +1,158 @@
+# Searches for mendelian randomi[s/z]ation and the different types of diabetes each year between 2000-2025
+# Makes a table with the cumulative number of papers per year
+# Makes a line graph of this cumulative data with a legend
+# Only adds types of diabetes which had 1 or more papers on MR at the time of writing as per a previous search
+# Only done till 2025 to prevent 2026 from skewing the pattern as at the time of writing the year was incomplete
+
+import requests
+import pandas as pd
+import time
+
+# Search terms
+search_terms = {
+    "type 1":
+        '(("mendelian randomisation"[tiab] OR "mendelian randomization"[tiab]) AND ("type 1 diabetes"[tiab] OR "type-1 diabetes"[tiab] OR "T1D"[tiab] OR "type I diabetes"[tiab] OR "type-I diabetes"[tiab]))',
+
+    "type 2":
+         '(("mendelian randomisation"[tiab] OR "mendelian randomization"[tiab]) AND ("type 2 diabetes"[tiab] OR "type-2 diabetes"[tiab] OR "T2D"[tiab] OR "type II diabetes"[tiab] OR "type-II diabetes"[tiab]))',
+    
+    "gestational":
+        '(("mendelian randomisation"[tiab] OR "mendelian randomization"[tiab]) AND (gestational diabetes"[tiab]))',
+
+    "LADA":
+        '(("mendelian randomisation"[tiab] OR "mendelian randomization"[tiab]) AND ("LADA"[tiab] OR "latent autoimmune diabetes in adults"[tiab]))',
+
+    "MODY":
+        '(("mendelian randomisation"[tiab] OR "mendelian randomization"[tiab]) AND ("MODY"[tiab] OR "maturity onset diabetes of the young"[tiab]))',
+
+    "neonatal":
+        '(("mendelian randomisation"[tiab] OR "mendelian randomization"[tiab]) AND ("neonatal diabetes"[tiab]))',
+    
+    "CFRD":
+        '(("mendelian randomisation"[tiab] OR "mendelian randomization"[tiab]) AND ("cystic fibrosis-related diabetes"[tiab] OR "CFRD"[tiab] OR "cystic fibrosis related diabetes"[tiab]))'
+
+}
+
+start_year = 2000
+end_year = 2025
+
+# Search pubmed
+url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+
+def pubmed_count(search_term):
+
+    params = {
+        "db": "pubmed",
+        "term": search_term,
+        "retmode": "json",
+        "email": "YOUR_EMAIL@example.com" # Add your email here
+    }
+
+    for attempt in range(3):
+
+        try:
+
+            response = requests.post(
+                url,
+                data=params,
+                timeout=30
+            )
+
+            if response.status_code == 200:
+
+                data = response.json()
+
+                return int(
+                    data["esearchresult"]["count"]
+                )
+
+            else:
+
+                print(
+                    f"PubMed returned status "
+                    f"{response.status_code}. "
+                    f"Attempt {attempt + 1}/3"
+                )
+
+        except requests.RequestException as error:
+
+            print(
+                f"Connection error: {error}. "
+                f"Attempt {attempt + 1}/3"
+            )
+
+        time.sleep(2)
+
+    raise RuntimeError(
+        f"PubMed search failed after 3 attempts:\n{search_term}"
+    )
+
+# Make the table
+yearly_table = pd.DataFrame({
+    "Year": range(start_year, end_year + 1)
+})
+
+for name, search_term in search_terms.items():
+
+    print(f"\nSearching: {name}")
+
+    yearly_counts = []
+
+    for year in range(start_year, end_year + 1):
+
+        # Add publication year to the search
+        yearly_search = (
+            f'({search_term}) AND {year}[pdat]'
+        )
+
+        # Search PubMed
+        count = pubmed_count(yearly_search)
+
+        yearly_counts.append(count)
+
+        print(
+            f"{year}: {count}"
+        )
+
+        # Small pause between requests
+        time.sleep(0.5)
+
+    # Count this cumulatively
+    cumulative_counts = (
+        pd.Series(yearly_counts).cumsum()
+    )
+
+    # Add column to table
+    yearly_table[name] = cumulative_counts.values
+
+# Display table
+yearly_table
+
+
+# Now, using the data in the yearly_table, we can make a line graph
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(12, 7))
+
+for column in yearly_table.columns[1:]:
+    plt.plot(
+        yearly_table["Year"],
+        yearly_table[column],
+        marker="o",
+        label=column
+    )
+
+plt.xlabel("Year")
+plt.ylabel("Cumulative number of papers")
+plt.title("Timescale of MR diabetes publications")
+
+# Add a legend to the graph
+plt.legend(
+    bbox_to_anchor=(1.05, 1),
+    loc="upper left"
+)
+
+plt.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
