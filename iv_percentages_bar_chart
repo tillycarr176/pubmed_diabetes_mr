@@ -1,0 +1,97 @@
+# requires having done steps i, ii and iii to generate the tables
+# of absolute totals of: MR papers, total papers; MR "gene" papers and total "gene" papers
+# merges together the tables from the previous searched terms
+# then makes a bar chart, grouped by diabetes type
+
+overall_table = pd.merge(
+    combined_nogene_table,
+    combined_gene_table,
+    on="Diabetes type",
+)
+
+overall_table.columns = [
+    "Diabetes type",
+    "MR papers",
+    "Total papers",
+    "Genetic MR papers",
+    "Total genetic papers"
+]
+
+overall_table["% of all papers which are MR"] = (
+    overall_table["MR papers"] /
+    overall_table["Total papers"] * 100
+).round(2)
+
+overall_table["% of genetic papers which are MR"] = (
+    overall_table["Genetic MR papers"] /
+    overall_table["Total genetic papers"] * 100
+).round(2)
+
+overall_table
+
+# ---------------------------------------------------------------------------
+# make bar chart
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Positions for each diabetes type
+y = np.arange(len(overall_table))
+
+# Width/thickness of each bar
+height = 0.35
+
+plt.figure(figsize=(10, 8))
+
+# First set of bars
+bars1 = plt.barh(
+    y - height/2,
+    overall_table.iloc[:, 5], # fifth column of the table
+    height,
+    label="Percentage of all papers which are MR"
+)
+
+# Second set of bars
+bars2 = plt.barh(
+    y + height/2,
+    overall_table.iloc[:, 6], # sixth column of the table
+    height,
+    label="Percentage of genetic papers which are MR"
+)
+
+# Individual labels of the percentage and the total number of papers, n
+plt.bar_label(
+    bars1,
+    labels=[
+        f"{bar.get_width():.2f}% (n={total:,.0f})"
+        for bar, total in zip(bars1, overall_table["Total papers"])
+    ],
+    padding=3
+)
+
+plt.bar_label(
+    bars2,
+    labels=[
+        f"{bar.get_width():.2f}% (n={total:,.0f})"
+        for bar, total in zip(bars2, overall_table["Total genetic papers"])
+    ],
+    padding=3
+)
+
+# Diabetes type labels
+plt.yticks(
+    y,
+    overall_table.iloc[:, 0]
+)
+
+plt.xlabel("Percentage (%)")
+plt.ylabel("Diabetes type")
+plt.title("Distribution of Diabetes Types")
+
+plt.legend()
+
+# Put first diabetes type at the top
+plt.gca().invert_yaxis()
+
+plt.tight_layout()
+plt.show()
