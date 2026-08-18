@@ -1,5 +1,6 @@
 # Searches pubmed for mendelian randomi[s/z]ation and a range of different types of diabetes
 # Then makes a bar chart of the absolute values
+# ----------------------------------- indicates a new cell throughout this folder
 
 import requests
 import pandas as pd
@@ -131,6 +132,7 @@ mr_table = pd.DataFrame(results)
 
 mr_table
 
+# -----------------------------------------------------------------------
 # Make the bar chart
 import matplotlib.pyplot as plt
 
