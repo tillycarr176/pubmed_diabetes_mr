@@ -1,7 +1,7 @@
 # To search the number of papers with our specific search terms in a certain date range
 # For example, this is to search for MR papers between 2000-2020 on different types of diabetes
+# This code is just one example of a set of search terms and a set of dates
 # This kind of code was run with total numbers of papers to calculate percentages
-
 
 import requests
 import pandas as pd
@@ -103,7 +103,7 @@ search_terms_mr_2000_2020 = {
     )
 }
 
-# Here is the important additional piece of code to specify the dates according to pubmed
+# Here is the important additional piece of code to specify the dates in pubmed
 
 def pubmed_count(search_term):
 
