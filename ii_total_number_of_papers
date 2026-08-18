@@ -114,3 +114,12 @@ for name, search_term in search_terms_total.items():
 total_table = pd.DataFrame(results)
 
 total_table
+
+# ------------------------------------------------------------------
+# Combine the search totals from the MR search in (i) into a table
+combined_nogene_table = mr_table.merge(
+    total_table,
+    on="Diabetes type"
+)
+
+combined_nogene_table
