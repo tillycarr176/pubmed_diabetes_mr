@@ -1,0 +1,116 @@
+# searches pubmed for the total number of papers on each type of diabetes
+
+import requests
+import pandas as pd
+import time
+
+# Put each search term here
+search_terms_total = {
+
+    "Type 2": (
+        '("type 2 diabetes"[tiab] OR "type-2 diabetes"[tiab] '
+        'OR "T2D"[tiab] OR "type II diabetes"[tiab] OR "type-II diabetes"[tiab])'
+    ),
+
+    "Type 1": (
+        '("type 1 diabetes"[tiab] OR "type-1 diabetes"[tiab] '
+        'OR "T1D"[tiab] OR "type I diabetes"[tiab] OR "type-I diabetes"[tiab])'
+    ),
+
+    "Gestational": (
+        '("gestational diabetes"[tiab])'
+    ),
+
+    "LADA": (
+        '("LADA"[tiab] OR "latent autoimmune diabetes in adults"[tiab])'
+    ),
+
+    "MODY": (
+        '("MODY"[tiab] OR "maturity onset diabetes of the young"[tiab] OR "maturity-onset diabetes of the young"[tiab])'
+    ),
+
+    "Neonatal": (
+        '("neonatal diabetes"[tiab])'
+    ),
+
+    "CFRD": (
+        '("cystic fibrosis-related diabetes"[tiab] '
+        'OR "CFRD"[tiab] '
+        'OR "cystic fibrosis related diabetes"[tiab])'
+    ),
+
+    "Type 3c": (
+        '("type 3c diabetes"[tiab] '
+        'OR "pancreatic diabetes"[tiab] '
+        'OR "pancreatogenic diabetes"[tiab])'
+    ),
+
+    "Ketosis-prone": (
+        '("ketosis-prone diabetes"[tiab] '
+        'OR "ketosis prone diabetes"[tiab])'
+    ),
+
+    "Post-transplantation": (
+        '("post-transplantation diabetes"[tiab] '
+        'OR "post transplantation diabetes"[tiab] '
+        'OR "post-transplant diabetes"[tiab] '
+        'OR "post transplant diabetes"[tiab] '
+        'OR "PTDM"[tiab] '
+        'OR "new-onset diabetes after transplantation"[tiab] '
+        'OR "new-onset diabetes after transplant"[tiab] '
+        'OR "new onset diabetes after transplantation"[tiab] '
+        'OR "new onset diabetes after transplant"[tiab] '
+        'OR "NODAT"[tiab])'
+    ),
+
+    "Wolfram syndrome": (
+        '("wolfram syndrome"[tiab])'
+    ),
+
+    "Alstrom syndrome": (
+        '("alstrom syndrome"[tiab])'
+    ),
+
+    "Type 5": (
+        '("type 5 diabetes"[tiab] '
+        'OR "malnutrition-related diabetes"[tiab] '
+        'OR "malnutrition related diabetes"[tiab] '
+        'OR "MRDM"[tiab])'
+    ),
+
+    "Steroid-induced": (
+        '("steroid-induced diabetes"[tiab] '
+        'OR "steroid induced diabetes"[tiab])'
+    )
+}
+
+# Search pubmed
+url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+
+results = []
+
+for name, search_term in search_terms_total.items():
+
+    params = {
+        "db": "pubmed",
+        "term": search_term,
+        "retmode": "json"
+    }
+
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+
+    data = response.json()
+    number_of_results = int(data["esearchresult"]["count"])
+
+    results.append({
+        "Diabetes type": name,
+        "Number of total publications": number_of_results
+    })
+
+    time.sleep(0.4)
+
+# Make the table
+total_table = pd.DataFrame(results)
+
+total_table
