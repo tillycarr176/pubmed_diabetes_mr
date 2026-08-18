@@ -127,3 +127,24 @@ for name, search_term in search_terms_mr.items():
 mr_table = pd.DataFrame(results)
 
 mr_table
+
+# Make the bar chart
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 6))
+
+bars = plt.barh(
+    mr_table.iloc[:, 0],   # first column
+    mr_table.iloc[:, 1]    # second column
+)
+
+plt.bar_label(bars)
+
+plt.xlabel("Absolute number of papers")
+plt.ylabel("Diabetes type")
+plt.title("Distribtution of diabetes type in MR papers")
+
+plt.gca().invert_yaxis()
+
+plt.tight_layout()
+plt.show()
