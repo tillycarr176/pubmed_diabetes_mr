@@ -1,3 +1,6 @@
+# Searches pubmed for mendelian randomi[s/z]ation and a range of different types of diabetes
+# Then makes a bar chart of the absolute values
+
 import requests
 import pandas as pd
 import time
